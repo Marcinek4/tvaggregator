@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalendarz nagrań - TV Recording Aggregator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>TV Recording Aggregator</h1>
+    <div id="auth-status"></div>
+  </header>
+
+  <main>
+    <nav class="nav-links">
+      <a href="index.html">Wyszukiwarka</a>
+      <a href="table.html">Lista wszystkich nagrań</a>
+      <a href="calendar.html">Kalendarz</a>
+      <span id="admin-links"></span>
+    </nav>
+
+    <section id="calendar-section">
+      <div id="year-selector"></div>
+      <div id="calendar-container"></div>
+      <div id="calendar-results" style="display: none;">
+        <button onclick="calendarView.showCalendar()" class="back-button">
+          ← Powrót do kalendarza
+        </button>
+        <div id="date-results"></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { AuthManager } from './js/authManager.js';
+    import { CalendarView } from './js/calendarView.js';
+
+    const authManager = new AuthManager();
+    window.calendarView = new CalendarView();
+    authManager.checkAuthStatus();
+  </script>
+</body>
+</html>

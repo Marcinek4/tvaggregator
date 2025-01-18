@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel administratora - TV Recording Aggregator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>TV Recording Aggregator</h1>
+    <div id="auth-status"></div>
+  </header>
+
+  <main>
+    <nav class="nav-links">
+      <a href="index.html">Wyszukiwarka</a>
+      <a href="table.html">Lista wszystkich nagrań</a>
+      <a href="calendar.html">Kalendarz</a>
+      <span id="admin-links"></span>
+    </nav>
+
+    <section id="admin-panel">
+      <div id="not-authorized" style="display: none;">
+        <p>Nie masz uprawnień do dostępu do tej strony.</p>
+      </div>
+      <div id="authorized-content" style="display: none;">
+        <h2>Panel administratora</h2>
+        
+        <section id="pending-users" class="admin-section">
+          <h3>Oczekujące konta</h3>
+          <div id="pending-users-list"></div>
+        </section>
+        
+        <section id="all-users" class="admin-section">
+          <h3>Wszyscy użytkownicy</h3>
+          <div id="users-list"></div>
+        </section>
+
+        <section id="system-management" class="admin-section">
+          <h3>Zarządzanie systemem</h3>
+          <div class="management-controls">
+            <button onclick="adminPanel.clearAllVideos()" class="danger-button">
+              Usuń wszystkie filmy
+            </button>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { AuthManager } from './js/authManager.js';
+    import { AdminPanel } from './js/adminPanel.js';
+
+    const authManager = new AuthManager();
+    
+    authManager.checkAuthStatus().then(user => {
+      if (user && user.role === 'admin') {
+        document.getElementById('authorized-content').style.display = 'block';
+        new AdminPanel();
+      } else {
+        document.getElementById('not-authorized').style.display = 'block';
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zarządzanie kanałami - TV Recording Aggregator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>TV Recording Aggregator</h1>
+    <div id="auth-status"></div>
+  </header>
+
+  <main>
+    <nav class="nav-links">
+      <a href="index.html">Wyszukiwarka</a>
+      <a href="table.html">Lista wszystkich nagrań</a>
+      <a href="calendar.html">Kalendarz</a>
+      <span id="admin-links"></span>
+    </nav>
+
+    <section id="channel-management">
+      <div id="not-authorized" style="display: none;">
+        <p>Nie masz uprawnień do dostępu do tej strony.</p>
+      </div>
+      <div id="authorized-content" style="display: none;">
+        <div id="alerts-container"></div>
+
+        <h2>Dodaj nowy kanał do śledzenia</h2>
+        <form id="channel-track-form">
+          <div class="form-group">
+            <label for="channel-url">Identyfikator kanału:</label>
+            <input type="text" id="channel-url" required 
+                   placeholder="np. UC22pSCK_SwJJ92EmNzGXBhQ">
+          </div>
+          <div class="form-group">
+            <label for="date-pattern">Wzorzec daty (RegExp):</label>
+            <input type="text" id="date-pattern" 
+                   placeholder="(\d{2}\.\d{2}\.\d{4})"
+                   title="Wprowadź wyrażenie regularne do wydobywania daty z tytułu">
+            <small>Domyślnie: (\d{2}\.\d{2}\.\d{4}) - przykład: 01.01.2023</small>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="strict-date-matching" checked>
+              Dodawaj tylko filmy z pasującym wzorcem daty
+            </label>
+          </div>
+          <button type="submit">Dodaj kanał</button>
+        </form>
+
+        <h2>Śledzone kanały</h2>
+        <div id="tracked-channels"></div>
+      </div>
+    </section>
+
+    <!-- Pattern Edit Modal -->
+    <div id="pattern-edit-modal" style="display: none;">
+      <div class="modal-backdrop" onclick="closePatternModal()"></div>
+      <div class="pattern-edit-modal">
+        <h3>Edytuj wzorzec daty</h3>
+        <form onsubmit="savePattern(); return false;">
+          <div class="form-group">
+            <label for="edit-date-pattern">Wzorzec daty (RegExp):</label>
+            <input type="text" id="edit-date-pattern" 
+                   placeholder="(\d{2}\.\d{2}\.\d{4})">
+            <small>Domyślnie: (\d{2}\.\d{2}\.\d{4}) - przykład: 01.01.2023</small>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="edit-strict-date-matching">
+              Dodawaj tylko filmy z pasującym wzorcem daty
+            </label>
+          </div>
+          <div class="button-group">
+            <button type="submit">Zapisz</button>
+            <button type="button" onclick="closePatternModal()">Anuluj</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Mappings Edit Modal -->
+    <div id="mappings-edit-modal" style="display: none;">
+      <div class="modal-backdrop" onclick="closeMappingsModal()"></div>
+      <div class="mappings-edit-modal">
+        <h3>Edytuj mapowania nazw kanałów</h3>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="extract-channel-from-title">
+            Wydobywaj nazwę kanału z części tytułu przed myślnikiem
+          </label>
+        </div>
+        <div id="mappings-list"></div>
+        <button onclick="addNewMapping()" type="button">Dodaj mapowanie</button>
+        <div class="mapping-controls">
+          <button onclick="saveMappings()" class="save-button">Zapisz</button>
+          <button onclick="closeMappingsModal()" class="cancel-button">Anuluj</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { AuthManager } from './js/authManager.js';
+    import { YoutubeTracker } from './js/youtubeTracker.js';
+
+    const authManager = new AuthManager();
+    
+    authManager.checkAuthStatus().then(user => {
+      if (user && (user.role === 'admin' || user.role === 'moderator')) {
+        document.getElementById('authorized-content').style.display = 'block';
+        window.youtubeTracker = new YoutubeTracker();
+
+        window.removeTrackedChannel = (channelId) => {
+          youtubeTracker.trackedChannels = youtubeTracker.trackedChannels
+            .filter(c => c.id !== channelId);
+          localStorage.setItem('trackedChannels', 
+            JSON.stringify(youtubeTracker.trackedChannels));
+          youtubeTracker.renderTrackedChannels();
+        };
+
+        window.checkNewVideos = (channelId) => {
+          youtubeTracker.checkNewVideos(channelId);
+        };
+
+        window.editChannelPattern = (channelId) => {
+          const channel = youtubeTracker.trackedChannels
+            .find(c => c.id === channelId);
+          document.getElementById('edit-date-pattern').value = 
+            channel.datePattern || '(\\d{2}\\.\\d{2}\\.\\d{4})';
+          document.getElementById('edit-strict-date-matching').checked =
+            channel.strictDateMatching !== false;
+          window.editingChannelId = channelId;
+          document.getElementById('pattern-edit-modal').style.display = 'block';
+        };
+
+        window.savePattern = () => {
+          const pattern = document.getElementById('edit-date-pattern').value;
+          const strictDateMatching = document.getElementById('edit-strict-date-matching').checked;
+          const channelIndex = youtubeTracker.trackedChannels
+            .findIndex(c => c.id === window.editingChannelId);
+          if (channelIndex !== -1) {
+            youtubeTracker.trackedChannels[channelIndex].datePattern = pattern;
+            youtubeTracker.trackedChannels[channelIndex].strictDateMatching = strictDateMatching;
+            localStorage.setItem('trackedChannels', 
+              JSON.stringify(youtubeTracker.trackedChannels));
+            youtubeTracker.renderTrackedChannels();
+          }
+          closePatternModal();
+        };
+
+        window.closePatternModal = () => {
+          document.getElementById('pattern-edit-modal').style.display = 'none';
+          window.editingChannelId = null;
+        };
+
+        window.editChannelMappings = (channelId) => {
+          const channel = youtubeTracker.trackedChannels.find(c => c.id === channelId);
+          window.editingMappingsChannelId = channelId;
+          
+          document.getElementById('mappings-list').innerHTML = channel.channelMappings.map((mapping, index) => `
+            <div class="mapping-entry">
+              <input type="text" value="${mapping.from}" placeholder="Tekst oryginalny" class="mapping-from">
+              <span>→</span>
+              <input type="text" value="${mapping.to}" placeholder="Nazwa kanału" class="mapping-to">
+              <button type="button" onclick="removeMappingEntry(${index})" class="remove-mapping">×</button>
+            </div>
+          `).join('');
+
+          document.getElementById('extract-channel-from-title').checked = channel.extractChannelFromTitle;
+          document.getElementById('mappings-edit-modal').style.display = 'block';
+        };
+
+        window.addNewMapping = () => {
+          const mappingsList = document.getElementById('mappings-list');
+          const newEntry = document.createElement('div');
+          newEntry.className = 'mapping-entry';
+          newEntry.innerHTML = `
+            <input type="text" placeholder="Tekst oryginalny" class="mapping-from">
+            <span>→</span>
+            <input type="text" placeholder="Nazwa kanału" class="mapping-to">
+            <button type="button" onclick="this.parentElement.remove()" class="remove-mapping">×</button>
+          `;
+          mappingsList.appendChild(newEntry);
+        };
+
+        window.removeMappingEntry = (index) => {
+          const mappingEntries = document.querySelectorAll('.mapping-entry');
+          mappingEntries[index]?.remove();
+        };
+
+        window.saveMappings = () => {
+          const channelIndex = youtubeTracker.trackedChannels
+            .findIndex(c => c.id === window.editingMappingsChannelId);
+          
+          if (channelIndex !== -1) {
+            const mappingEntries = document.querySelectorAll('.mapping-entry');
+            const newMappings = Array.from(mappingEntries).map(entry => ({
+              from: entry.querySelector('.mapping-from').value,
+              to: entry.querySelector('.mapping-to').value
+            })).filter(m => m.from && m.to);
+
+            youtubeTracker.trackedChannels[channelIndex].channelMappings = newMappings;
+            youtubeTracker.trackedChannels[channelIndex].extractChannelFromTitle = 
+              document.getElementById('extract-channel-from-title').checked;
+
+            localStorage.setItem('trackedChannels', 
+              JSON.stringify(youtubeTracker.trackedChannels));
+            youtubeTracker.renderTrackedChannels();
+          }
+          closeMappingsModal();
+        };
+
+        window.closeMappingsModal = () => {
+          document.getElementById('mappings-edit-modal').style.display = 'none';
+          window.editingMappingsChannelId = null;
+        };
+      } else {
+        document.getElementById('not-authorized').style.display = 'block';
+        window.location.href = 'index.html';
+      }
+    });
+  </script>
+</body>
+</html>

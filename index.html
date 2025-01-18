@@ -1,0 +1,77 @@
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TV Recording Aggregator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>TV Recording Aggregator</h1>
+    <div id="auth-status"></div>
+  </header>
+
+  <main>
+    <nav class="nav-links">
+      <a href="index.html">Wyszukiwarka</a>
+      <a href="table.html">Lista wszystkich nagrań</a>
+      <a href="calendar.html">Kalendarz</a>
+      <span id="admin-links"></span>
+    </nav>
+
+    <section id="search-section">
+      <form id="search-form">
+        <div class="search-group">
+          <label for="tv-channel">Kanał telewizyjny:</label>
+          <select id="tv-channel" name="tv-channel">
+            <option value="">Wszystkie</option>
+          </select>
+        </div>
+
+        <div class="search-group">
+          <label for="date">Data nagrania:</label>
+          <input type="text" id="date" name="date" placeholder="DD.MM.RRRR lub MM.RRRR lub RRRR">
+        </div>
+
+        <div class="search-group">
+          <label for="youtube-channel">Kanał YouTube:</label>
+          <select id="youtube-channel" name="youtube-channel">
+            <option value="">Wszystkie</option>
+          </select>
+        </div>
+
+        <div class="search-group">
+          <label>Elementy nagrania:</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" name="elements" value="reklama"> Reklama</label>
+            <label><input type="checkbox" name="elements" value="zapowiedz"> Zapowiedź</label>
+            <label><input type="checkbox" name="elements" value="spot"> Spot</label>
+            <label><input type="checkbox" name="elements" value="konkurs"> Konkurs</label>
+            <label><input type="checkbox" name="elements" value="ident"> Ident</label>
+            <label><input type="checkbox" name="elements" value="pauza"> Pauza</label>
+            <label><input type="checkbox" name="elements" value="zakonczenie"> Zakończenie emisji/programu</label>
+            <label><input type="checkbox" name="elements" value="rozpoczecie"> Rozpoczęcie emisji/programu</label>
+            <label><input type="checkbox" name="elements" value="wpadka"> Wpadka</label>
+            <label><input type="checkbox" name="elements" value="belka"> Belka</label>
+            <label><input type="checkbox" name="elements" value="studio"> Studio</label>
+            <label><input type="checkbox" name="elements" value="plansza"> Plansza</label>
+          </div>
+        </div>
+
+        <div class="search-group">
+          <label for="program">Program:</label>
+          <input type="text" id="program" name="program">
+        </div>
+
+        <button type="submit">Szukaj</button>
+      </form>
+    </section>
+
+    <section id="results-section">
+      <div id="results-container"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
