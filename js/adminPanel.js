@@ -6,7 +6,6 @@ export class AdminPanel {
   init() {
     this.renderPendingUsers();
     this.renderAllUsers();
-    this.renderManagementControls();
   }
 
   renderPendingUsers() {
@@ -95,22 +94,6 @@ export class AdminPanel {
     `;
   }
 
-  renderManagementControls() {
-    const existingControls = document.querySelector('.management-controls');
-    if (!existingControls) {
-      const controlsSection = document.createElement('section');
-      controlsSection.innerHTML = `
-        <h3>Zarządzanie systemem</h3>
-        <div class="management-controls">
-          <button onclick="adminPanel.clearAllVideos()" class="danger-button">
-            Usuń wszystkie filmy
-          </button>
-        </div>
-      `;
-      document.getElementById('admin-panel').appendChild(controlsSection);
-    }
-  }
-
   approveUser(username) {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const userIndex = users.findIndex(u => u.username === username);
@@ -162,13 +145,6 @@ export class AdminPanel {
         
         this.renderAllUsers();
       }
-    }
-  }
-
-  clearAllVideos() {
-    if (confirm('Czy na pewno chcesz usunąć wszystkie filmy? Tej operacji nie można cofnąć.')) {
-      localStorage.removeItem('videos');
-      alert('Wszystkie filmy zostały usunięte');
     }
   }
 }

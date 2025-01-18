@@ -7,8 +7,6 @@ export class VideoParser {
         elements: {
           reklama: /reklamy|blok\sreklamowy/i,
           zapowiedz: /zapowied(?:ź|z)/i,
-          spot: /spot/i,
-          konkurs: /konkurs|teleaudio|audiotele/i,
           ident: /ident/i,
           pauza: /pauza/i,
           zakonczenie: /zakoń?czeni[ae]|koniec/i,

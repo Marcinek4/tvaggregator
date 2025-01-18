@@ -16,7 +16,6 @@
     <nav class="nav-links">
       <a href="index.html">Wyszukiwarka</a>
       <a href="table.html">Lista wszystkich nagrań</a>
-      <a href="calendar.html">Kalendarz</a>
       <span id="admin-links"></span>
     </nav>
 
@@ -27,23 +26,14 @@
       <div id="authorized-content" style="display: none;">
         <h2>Panel administratora</h2>
         
-        <section id="pending-users" class="admin-section">
+        <section id="pending-users">
           <h3>Oczekujące konta</h3>
           <div id="pending-users-list"></div>
         </section>
         
-        <section id="all-users" class="admin-section">
+        <section id="all-users">
           <h3>Wszyscy użytkownicy</h3>
           <div id="users-list"></div>
-        </section>
-
-        <section id="system-management" class="admin-section">
-          <h3>Zarządzanie systemem</h3>
-          <div class="management-controls">
-            <button onclick="adminPanel.clearAllVideos()" class="danger-button">
-              Usuń wszystkie filmy
-            </button>
-          </div>
         </section>
       </div>
     </section>
